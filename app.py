@@ -15,17 +15,15 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     with st.spinner("در حال پردازش..."):
         try:
-            # ذخیره موقت فایل آپلود شده
+            # ذخیره موقت فایل
             with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1]) as tmp_file:
                 tmp_file.write(uploaded_file.getbuffer())
                 tmp_path = tmp_file.name
-            
-            # ارسال مسیر فایل به تابع
+
             df_std = load_and_standardize(tmp_path)
-            
-            # پاک کردن فایل موقت
-            os.unlink(tmp_path)
-            
+
+            os.unlink(tmp_path)  # حذف فایل موقت
+
             st.success("✅ تشخیص خودکار موفق!")
             st.dataframe(df_std)
 

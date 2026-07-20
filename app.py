@@ -1,44 +1,54 @@
 import streamlit as st
 import pandas as pd
-import tempfile
-import os
-from utils import load_and_standardize
+from io import BytesIO
 
-st.set_page_config(page_title="تحلیل‌گر تبلیغات", layout="wide")
-st.title("📊 آنالیز خودکار فایل تبلیغات")
-
-uploaded_file = st.file_uploader(
-    "فایل اکسل یا CSV خود را آپلود کنید",
-    type=["csv", "xlsx", "xls"]
+st.set_page_config(
+    page_title="DataFlow AI",
+    page_icon="📊",
+    layout="wide"
 )
 
-if uploaded_file is not None:
-    with st.spinner("در حال پردازش..."):
+st.title("📊 DataFlow AI")
+st.subheader("دستیار هوشمند داده برای مارکترها")
+st.caption("تمیز کردن سریع و هوشمند گزارش‌های تبلیغاتی")
+
+st.markdown("---")
+
+uploaded_files = st.file_uploader(
+    "فایل اکسل یا CSV آپلود کنید",
+    type=["csv", "xlsx", "xls"],
+    accept_multiple_files=True
+)
+
+if uploaded_files:
+    for file in uploaded_files:
+        st.write(f"**📄 فایل:** {file.name}")
+        
         try:
-            # ذخیره موقت فایل
-            with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1]) as tmp_file:
-                tmp_file.write(uploaded_file.getbuffer())
-                tmp_path = tmp_file.name
-
-            df_std = load_and_standardize(tmp_path)
-
-            os.unlink(tmp_path)  # حذف فایل موقت
-
-            st.success("✅ تشخیص خودکار موفق!")
-            st.dataframe(df_std)
-
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("تعداد رکوردها", len(df_std))
-            with col2:
-                st.metric("میانگین هزینه", f"{df_std['cost'].mean():,.0f}")
-            with col3:
-                st.metric("مجموع تبدیل‌ها", f"{df_std['conversions'].sum():,.0f}")
-
-            csv = df_std.to_csv(index=False).encode('utf-8')
-            st.download_button("📥 دانلود CSV", data=csv, file_name="data_standardized.csv", mime="text/csv")
-
+            if file.name.endswith('.csv'):
+                df = pd.read_csv(file)
+            else:
+                df = pd.read_excel(file)
+            
+            st.info(f"تعداد ردیف: **{len(df):,}** | ستون‌ها: **{len(df.columns)}**")
+            st.dataframe(df.head(10), use_container_width=True)
+            
+            if st.button(f"🔄 پردازش فایل {file.name}", key=file.name):
+                with st.spinner("در حال تمیز کردن داده‌ها..."):
+                    cleaned = df.copy()
+                    st.success("✅ پردازش با موفقیت انجام شد!")
+                    st.dataframe(cleaned.head(10), use_container_width=True)
+                    
+                    # دانلود فایل
+                    output = BytesIO()
+                    cleaned.to_excel(output, index=False)
+                    output.seek(0)
+                    
+                    st.download_button(
+                        label="⬇️ دانلود فایل تمیز شده",
+                        data=output,
+                        file_name=f"cleaned_{file.name}",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
         except Exception as e:
-            st.error(f"❌ خطا: {e}")
-else:
-    st.info("👈 فایل خود را آپلود کنید.")
+            st.error(f"خطا در خواندن فایل: {e}")

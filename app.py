@@ -2,11 +2,7 @@ import streamlit as st
 import pandas as pd
 from io import BytesIO
 
-st.set_page_config(
-    page_title="DataFlow AI",
-    page_icon="📊",
-    layout="wide"
-)
+st.set_page_config(page_title="DataFlow AI", page_icon="📊", layout="wide")
 
 st.title("📊 DataFlow AI")
 st.subheader("دستیار هوشمند داده برای مارکترها")
@@ -30,25 +26,24 @@ if uploaded_files:
             else:
                 df = pd.read_excel(file)
             
-            st.info(f"تعداد ردیف: **{len(df):,}** | تعداد ستون: **{len(df.columns)}**")
+            st.info(f"تعداد ردیف: {len(df):,} | ستون: {len(df.columns)}")
             st.dataframe(df.head(10), use_container_width=True)
             
             if st.button(f"🔄 پردازش {file.name}", key=file.name):
-                with st.spinner("در حال تمیز کردن داده‌ها..."):
+                with st.spinner("در حال پردازش..."):
                     cleaned = df.copy()
-                    st.success("✅ پردازش با موفقیت انجام شد!")
+                    st.success("✅ پردازش انجام شد!")
                     st.dataframe(cleaned.head(10), use_container_width=True)
                     
-                    # دانلود
                     output = BytesIO()
                     cleaned.to_excel(output, index=False)
                     output.seek(0)
                     
                     st.download_button(
-                        label="⬇️ دانلود فایل تمیز شده",
+                        "⬇️ دانلود فایل تمیز شده",
                         data=output,
                         file_name=f"cleaned_{file.name}",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
         except Exception as e:
-            st.error(f"خطا در خواندن فایل: {e}")
+            st.error(f"خطا: {e}")

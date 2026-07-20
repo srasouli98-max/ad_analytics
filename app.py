@@ -10,7 +10,7 @@ st.set_page_config(
 
 st.title("📊 DataFlow AI")
 st.subheader("دستیار هوشمند داده برای مارکترها")
-st.caption("تمیز کردن سریع و هوشمند گزارش‌های تبلیغاتی")
+st.caption("تمیز کردن سریع گزارش‌های تبلیغاتی")
 
 st.markdown("---")
 
@@ -30,16 +30,16 @@ if uploaded_files:
             else:
                 df = pd.read_excel(file)
             
-            st.info(f"تعداد ردیف: **{len(df):,}** | ستون‌ها: **{len(df.columns)}**")
+            st.info(f"تعداد ردیف: **{len(df):,}** | تعداد ستون: **{len(df.columns)}**")
             st.dataframe(df.head(10), use_container_width=True)
             
-            if st.button(f"🔄 پردازش فایل {file.name}", key=file.name):
+            if st.button(f"🔄 پردازش {file.name}", key=file.name):
                 with st.spinner("در حال تمیز کردن داده‌ها..."):
                     cleaned = df.copy()
                     st.success("✅ پردازش با موفقیت انجام شد!")
                     st.dataframe(cleaned.head(10), use_container_width=True)
                     
-                    # دانلود فایل
+                    # دانلود
                     output = BytesIO()
                     cleaned.to_excel(output, index=False)
                     output.seek(0)
